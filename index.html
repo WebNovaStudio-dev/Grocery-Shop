@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshCart | Your Daily Grocery</title> <!--[cite: 12] -->
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"> <!--[cite: 12] -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a', // Fresh Green[cite: 13]
+                            700: '#15803d',
+                        },
+                        slateDark: '#1e293b', // Dark Slate[cite: 13]
+                        warmDeal: '#fffaf0', // Warm Deals Surface[cite: 13]
+                    },
+                    animation: {
+                        'pulse-gentle': 'pulseGentle 3s ease-in-out infinite',
+                        'float': 'floatSlow 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGentle: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.03)' },
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .hero-surface {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.75) 100%), 
+                        url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=85'); /*[cite: 13] */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .reveal-element {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal-element.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 font-sans antialiased overflow-x-hidden selection:bg-brand-600 selection:text-white pb-16 md:pb-0">
+
+    <!-- Interactive Cart Toast Notification -->
+    <div id="actionToast" class="fixed top-20 right-6 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-200 flex items-center gap-3">
+            <div id="toastIcon" class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <p id="toastTitle" class="text-xs font-bold text-slate-900">Cart Updated</p>
+                <p id="toastMessage" class="text-[11px] text-slate-500">Item successfully added to your bag.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Announcement Ribbon -->
+    <div class="bg-brand-700 text-white text-[11px] font-semibold tracking-wider uppercase py-2 px-4 text-center">
+        <span class="inline-block animate-pulse-gentle">⚡ Super Express 30-Min Delivery Available Across Metro Areas</span>
+    </div>
+
+    <!-- Sticky Navigation[cite: 12, 13] -->
+    <header class="sticky top-0 z-40 glass-nav border-b border-slate-200/80 transition-all duration-300"> <!--[cite: 12, 13] -->
+        <div class="max-w-7xl mx-auto px-5 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+            
+            <!-- Brand Logo[cite: 12] -->
+            <a href="#home" class="text-2xl font-black tracking-tight text-slateDark flex items-center gap-1.5 group"> <!--[cite: 12, 13] -->
+                <span class="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center shadow-md shadow-brand-500/25 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-leaf text-base"></i>
+                </span>
+                <span>Fresh<span class="text-brand-600">Cart</span></span> <!--[cite: 12, 13] -->
+            </a>
+
+            <!-- Search Input (Desktop)[cite: 12] -->
+            <div class="hidden md:flex flex-1 max-w-md mx-6 relative">
+                <input 
+                    type="text" 
+                    placeholder="Search organic fruits, veggies, milk, bakery..." 
+                    class="w-full bg-slate-100/80 border border-slate-200 rounded-full py-2.5 pl-11 pr-4 text-xs font-medium text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                >
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i> <!--[cite: 12] -->
+            </div>
+
+            <!-- Desktop Navigation Links[cite: 12] -->
+            <nav class="hidden lg:flex items-center gap-8 font-semibold text-xs uppercase tracking-wider text-slate-600"> <!--[cite: 12, 13] -->
+                <a href="#home" class="hover:text-brand-600 transition">Home</a> <!--[cite: 12, 13] -->
+                <a href="#categories" class="hover:text-brand-600 transition">Categories</a> <!--[cite: 12, 13] -->
+                <a href="#deals" class="hover:text-brand-600 transition">Deals</a> <!--[cite: 12, 13] -->
+                <a href="#shop" class="hover:text-brand-600 transition">Shop</a> <!--[cite: 12, 13] -->
+            </nav>
+
+            <!-- Navigation Action Icons[cite: 12, 13] -->
+            <div class="flex items-center gap-3.5">
+                <!-- Search Button (Mobile Only)[cite: 12] -->
+                <button class="md:hidden w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:text-brand-600 transition" aria-label="Search"> <!--[cite: 12] -->
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i> <!--[cite: 12] -->
+                </button>
+
+                <!-- Wishlist Icon[cite: 12] -->
+                <button id="wishlistBtn" class="relative w-9 h-9 rounded-full bg-slate-100 hover:bg-rose-50 flex items-center justify-center text-slate-700 hover:text-rose-600 transition" aria-label="Favorites"> <!--[cite: 12] -->
+                    <i class="fa-regular fa-heart text-sm"></i>
+                    <span id="wishlistCount" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">0</span> <!--[cite: 12, 13] -->
+                </button>
+
+                <!-- Cart Icon[cite: 12] -->
+                <button id="cartBtn" class="relative w-9 h-9 rounded-full bg-brand-50 hover:bg-brand-100 flex items-center justify-center text-brand-600 transition" aria-label="Shopping Cart"> <!--[cite: 12] -->
+                    <i class="fa-solid fa-cart-shopping text-sm"></i> <!--[cite: 12] -->
+                    <span id="cartCount" class="absolute -top-1 -right-1 bg-brand-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">0</span> <!--[cite: 12, 13] -->
+                </button>
+
+                <!-- User Profile[cite: 12] -->
+                <button class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:text-brand-600 transition hidden sm:flex" aria-label="Account"> <!--[cite: 12] -->
+                    <i class="fa-regular fa-user text-sm"></i>
+                </button>
+
+                <!-- Mobile Hamburger Toggle -->
+                <button id="mobileMenuBtn" aria-label="Toggle menu" class="lg:hidden p-2 text-slate-700 hover:text-brand-600 focus:outline-none">
+                    <i class="fa-solid fa-bars text-lg" id="menuToggleIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Navigation[cite: 12] -->
+        <div id="mobileDrawer" class="hidden lg:hidden px-6 pt-2 pb-6 bg-white/95 border-b border-slate-200 backdrop-blur-2xl">
+            <div class="flex flex-col gap-3 font-semibold text-xs uppercase tracking-wider text-slate-700 pt-2">
+                <a href="#home" class="mobile-nav-link py-2 hover:text-brand-600">Home</a> <!--[cite: 12, 13] -->
+                <a href="#categories" class="mobile-nav-link py-2 hover:text-brand-600">Categories</a> <!--[cite: 12, 13] -->
+                <a href="#deals" class="mobile-nav-link py-2 hover:text-brand-600">Deals &amp; Combos</a> <!--[cite: 12, 13] -->
+                <a href="#shop" class="mobile-nav-link py-2 hover:text-brand-600">Weekly Featured</a> <!--[cite: 12, 13] -->
+                <a href="#deals" class="mobile-nav-link text-center w-full mt-2 py-3 rounded-full bg-brand-600 text-white font-bold tracking-widest shadow-lg shadow-brand-600/30">
+                    Claim 30% Off First Order <!--[cite: 12] -->
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section[cite: 12, 13] -->
+    <section id="home" class="relative min-h-[82vh] flex items-center hero-surface text-white px-6 py-20"> <!--[cite: 12, 13] -->
+        <div class="max-w-7xl mx-auto w-full">
+            <div class="max-w-2xl reveal-element">
+                
+                <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-emerald-300 text-xs font-bold uppercase tracking-widest mb-6">
+                    <i class="fa-solid fa-circle-check"></i> 100% Organic Certified Produce
+                </span>
+
+                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6">
+                    Fresh Groceries <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-200 to-teal-300">
+                        Delivered to Your Door. <!--[cite: 12] -->
+                    </span>
+                </h1>
+
+                <p class="text-slate-200 text-base sm:text-xl font-normal leading-relaxed mb-8 max-w-lg">
+                    Get up to 30% off on your first order. <!--[cite: 12] --> Fresh hand-picked harvests and everyday pantry essentials shipped within 30 minutes.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <a href="#shop" class="px-8 py-4 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-[2px] text-center shadow-xl shadow-brand-600/30 hover:scale-105 active:scale-95 transition-all"> <!--[cite: 12, 13] -->
+                        Shop Now <!--[cite: 12] -->
+                    </a>
+                    <a href="#deals" class="px-8 py-4 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white font-bold text-xs uppercase tracking-[2px] text-center transition-all">
+                        Browse Flash Deals <!--[cite: 12] -->
+                    </a>
+                </div>
+
+                <!-- Trust Strip Badges -->
+                <div class="grid grid-cols-3 gap-4 pt-12 mt-12 border-t border-white/15 max-w-lg">
+                    <div>
+                        <p class="text-xl sm:text-2xl font-black text-emerald-300">30 Min</p>
+                        <p class="text-[11px] text-slate-300 font-medium uppercase mt-0.5">Express Delivery</p>
+                    </div>
+                    <div>
+                        <p class="text-xl sm:text-2xl font-black text-emerald-300">100%</p>
+                        <p class="text-[11px] text-slate-300 font-medium uppercase mt-0.5">Farm Fresh Guarantee</p>
+                    </div>
+                    <div>
+                        <p class="text-xl sm:text-2xl font-black text-emerald-300">Zero</p>
+                        <p class="text-[11px] text-slate-300 font-medium uppercase mt-0.5">Plastic Waste</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section[cite: 12, 13] -->
+    <section id="categories" class="py-24 max-w-7xl mx-auto px-6 reveal-element"> <!--[cite: 12, 13] -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-14">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
+                    Aisle Explorer
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slateDark mt-3 tracking-tight">Browse Categories</h2> <!--[cite: 12, 13] -->
+            </div>
+            <p class="text-slate-500 text-xs sm:text-sm max-w-sm">Direct farm-to-table supply chains guaranteeing crisp peak ripeness.</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6">
+            
+            <!-- Category 1: Fresh Produce[cite: 12] -->
+            <div class="group relative rounded-3xl overflow-hidden h-64 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer"> <!--[cite: 13] -->
+                <img 
+                    src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80" 
+                    alt="Fresh Produce" 
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                > <!--[cite: 12, 13] -->
+                <div class="absolute inset-0 bg-gradient-to-t from-slateDark/90 via-slateDark/30 to-transparent"></div> <!--[cite: 13] -->
+                <div class="absolute bottom-5 left-5 right-5 text-white">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block mb-0.5">Organic</span>
+                    <h3 class="text-lg font-bold">Fresh Produce</h3> <!--[cite: 12] -->
+                    <p class="text-xs text-slate-300 font-light">Fruits &amp; Veggies</p> <!--[cite: 12] -->
+                </div>
+            </div>
+
+            <!-- Category 2: Dairy & Eggs[cite: 12] -->
+            <div class="group relative rounded-3xl overflow-hidden h-64 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer"> <!--[cite: 13] -->
+                <img 
+                    src="https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=600&q=80" 
+                    alt="Dairy and Eggs" 
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-slateDark/90 via-slateDark/30 to-transparent"></div> <!--[cite: 13] -->
+                <div class="absolute bottom-5 left-5 right-5 text-white">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block mb-0.5">Farm Fresh</span>
+                    <h3 class="text-lg font-bold">Dairy &amp; Eggs</h3> <!--[cite: 12] -->
+                    <p class="text-xs text-slate-300 font-light">Milk, Cheese, Butter</p> <!--[cite: 12] -->
+                </div>
+            </div>
+
+            <!-- Category 3: Bakery[cite: 12] -->
+            <div class="group relative rounded-3xl overflow-hidden h-64 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer"> <!--[cite: 13] -->
+                <img 
+                    src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80" 
+                    alt="Bakery" 
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-slateDark/90 via-slateDark/30 to-transparent"></div> <!--[cite: 13] -->
+                <div class="absolute bottom-5 left-5 right-5 text-white">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block mb-0.5">Artisanal</span>
+                    <h3 class="text-lg font-bold">Bakery</h3> <!--[cite: 12] -->
+                    <p class="text-xs text-slate-300 font-light">Freshly Baked Bread</p> <!--[cite: 12] -->
+                </div>
+            </div>
+
+            <!-- Category 4: Snacks[cite: 12] -->
+            <div class="group relative rounded-3xl overflow-hidden h-64 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer"> <!--[cite: 13] -->
+                <img 
+                    src="https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=600&q=80" 
+                    alt="Snacks" 
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-slateDark/90 via-slateDark/30 to-transparent"></div> <!--[cite: 13] -->
+                <div class="absolute bottom-5 left-5 right-5 text-white">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block mb-0.5">Pantry</span>
+                    <h3 class="text-lg font-bold">Snacks</h3> <!--[cite: 12] -->
+                    <p class="text-xs text-slate-300 font-light">Chips &amp; Biscuits</p> <!--[cite: 12] -->
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Flash Deals & Combos Section[cite: 12, 13] -->
+    <section id="deals" class="py-24 bg-warmDeal border-y border-amber-200/50 reveal-element"> <!--[cite: 12, 13] -->
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-xl mx-auto mb-14">
+                <span class="text-xs font-bold uppercase tracking-widest text-amber-700 bg-amber-100 px-3.5 py-1 rounded-full border border-amber-300">
+                    Limited Time Bundles
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slateDark mt-3 tracking-tight">Flash Deals &amp; Combos</h2> <!--[cite: 12, 13] -->
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                
+                <!-- Main Featured Deal: BBQ Bundle[cite: 12, 13] -->
+                <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-10 border-2 border-dashed border-amber-500 shadow-xl flex flex-col justify-between relative overflow-hidden group"> <!--[cite: 13] -->
+                    <div>
+                        <!-- Active Live Countdown Badge[cite: 12, 13] -->
+                        <div class="inline-flex items-center gap-2 bg-amber-600 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-6 shadow-sm"> <!--[cite: 13] -->
+                            <i class="fa-regular fa-clock"></i>
+                            <span id="countdownTimer">Ends in: 05h 20m 15s</span> <!--[cite: 12] -->
+                        </div>
+
+                        <h2 class="text-2xl sm:text-4xl font-extrabold text-amber-900 tracking-tight mb-3"> <!--[cite: 13] -->
+                            Weekend BBQ Bundle <!--[cite: 12] -->
+                        </h2>
+
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6 max-w-md">
+                            Get Charcoal, Marinated Chicken, and Soft Drinks at a flat 40% discount. <!--[cite: 12] -->
+                        </p>
+
+                        <div class="flex items-baseline gap-3 mb-8">
+                            <span class="text-3xl sm:text-4xl font-black text-brand-600">$24.99</span> <!--[cite: 12] -->
+                            <span class="text-lg text-slate-400 line-through font-medium">$45.00</span> <!--[cite: 12] -->
+                            <span class="bg-red-100 text-red-600 font-bold text-xs px-2.5 py-0.5 rounded-md uppercase">Save 40%</span>
+                        </div>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 gap-6 items-center">
+                        <button class="add-cart-trigger w-full py-4 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-amber-600/30 transition flex items-center justify-center gap-2"> <!--[cite: 13] -->
+                            <i class="fa-solid fa-cart-shopping"></i> <!--[cite: 12] -->
+                            <span>Claim Deal</span> <!--[cite: 12] -->
+                        </button>
+                        <div class="h-44 rounded-2xl overflow-hidden shadow-md">
+                            <img 
+                                src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80" 
+                                alt="Weekend BBQ Bundle" 
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Combos[cite: 12, 13] -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    
+                    <!-- Combo 1: Breakfast Starter[cite: 12] -->
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex items-center gap-5 group">
+                        <img 
+                            src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=400&q=80" 
+                            alt="Breakfast Starter" 
+                            class="w-28 h-28 rounded-2xl object-cover group-hover:scale-105 transition-transform"
+                        > <!--[cite: 12] -->
+                        <div class="flex-1">
+                            <h3 class="font-bold text-base text-slateDark">Breakfast Starter</h3> <!--[cite: 12] -->
+                            <p class="text-xs text-slate-500 mb-2">Eggs + Bread + Juice</p> <!--[cite: 12] -->
+                            <span class="inline-block text-[11px] font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-md mb-3 border border-brand-200">
+                                Save $5.00 <!--[cite: 12] -->
+                            </span>
+                            <button class="add-cart-trigger w-full py-2 rounded-xl bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-800 text-xs font-bold transition flex items-center justify-center gap-1.5"> <!--[cite: 12] -->
+                                <i class="fa-solid fa-plus text-[10px]"></i> Add Combo <!--[cite: 12] -->
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Combo 2: Tropical Mix[cite: 12] -->
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex items-center gap-5 group">
+                        <img 
+                            src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=400&q=80" 
+                            alt="Tropical Mix" 
+                            class="w-28 h-28 rounded-2xl object-cover group-hover:scale-105 transition-transform"
+                        > <!--[cite: 12] -->
+                        <div class="flex-1">
+                            <h3 class="font-bold text-base text-slateDark">Tropical Mix</h3> <!--[cite: 12] -->
+                            <p class="text-xs text-slate-500 mb-2">Mango + Pineapple + Kiwi</p> <!--[cite: 12] -->
+                            <span class="inline-block text-[11px] font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-md mb-3 border border-brand-200">
+                                Save $3.50 <!--[cite: 12] -->
+                            </span>
+                            <button class="add-cart-trigger w-full py-2 rounded-xl bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-800 text-xs font-bold transition flex items-center justify-center gap-1.5"> <!--[cite: 12] -->
+                                <i class="fa-solid fa-plus text-[10px]"></i> Add Combo <!--[cite: 12] -->
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Weekly Featured Products[cite: 12] -->
+    <section id="shop" class="py-24 max-w-7xl mx-auto px-6 reveal-element"> <!--[cite: 12, 13] -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-14">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
+                    Hand-Selected
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slateDark mt-3 tracking-tight">Weekly Featured Products</h2> <!--[cite: 12, 13] -->
+            </div>
+            <a href="#shop" class="text-xs font-bold uppercase tracking-wider text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                Explore Full Inventory <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            
+            <!-- Product 1: Red Gala Apples[cite: 12] -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 relative flex flex-col justify-between group">
+                <span class="absolute top-4 left-4 bg-rose-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full z-10"> <!--[cite: 13] -->
+                    Sale <!--[cite: 12, 13] -->
+                </span>
+                <button class="wishlist-trigger absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition z-10" aria-label="Add to Wishlist">
+                    <i class="fa-regular fa-heart text-xs"></i>
+                </button>
+
+                <div class="h-52 w-full flex items-center justify-center overflow-hidden rounded-2xl mb-4 bg-slate-50"> <!--[cite: 13] -->
+                    <img 
+                        src="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80" 
+                        alt="Red Gala Apples" 
+                        class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    > <!--[cite: 12] -->
+                </div>
+
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Fresh Produce</span> <!--[cite: 12, 13] -->
+                    <h3 class="font-bold text-base text-slateDark mb-1">Red Gala Apples (1kg)</h3> <!--[cite: 12, 13] -->
+                    <div class="text-amber-400 text-xs mb-3">⭐⭐⭐⭐ <span class="text-slate-400 font-medium">(12)</span></div> <!--[cite: 12, 13] -->
+                    
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span class="text-xl font-extrabold text-brand-600">$3.99</span> <!--[cite: 12, 13] -->
+                        <span class="text-xs text-slate-400 line-through">$5.50</span> <!--[cite: 12, 13] -->
+                    </div>
+
+                    <button class="add-cart-trigger w-full py-3 rounded-2xl bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-800 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"> <!--[cite: 12, 13] -->
+                        <i class="fa-solid fa-cart-plus"></i> <!--[cite: 12] -->
+                        <span>Add to Cart</span> <!--[cite: 12, 13] -->
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product 2: Organic Whole Milk[cite: 12] -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 relative flex flex-col justify-between group">
+                <span class="absolute top-4 left-4 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full z-10">
+                    Organic
+                </span>
+                <button class="wishlist-trigger absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition z-10" aria-label="Add to Wishlist">
+                    <i class="fa-regular fa-heart text-xs"></i>
+                </button>
+
+                <div class="h-52 w-full flex items-center justify-center overflow-hidden rounded-2xl mb-4 bg-slate-50"> <!--[cite: 13] -->
+                    <img 
+                        src="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=600&q=80" 
+                        alt="Organic Whole Milk" 
+                        class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    > <!--[cite: 12] -->
+                </div>
+
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Dairy</span> <!--[cite: 12, 13] -->
+                    <h3 class="font-bold text-base text-slateDark mb-1">Organic Whole Milk</h3> <!--[cite: 12, 13] -->
+                    <div class="text-amber-400 text-xs mb-3">⭐⭐⭐⭐⭐ <span class="text-slate-400 font-medium">(48)</span></div> <!--[cite: 12, 13] -->
+                    
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span class="text-xl font-extrabold text-brand-600">$4.50</span> <!--[cite: 12, 13] -->
+                    </div>
+
+                    <button class="add-cart-trigger w-full py-3 rounded-2xl bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-800 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"> <!--[cite: 12, 13] -->
+                        <i class="fa-solid fa-cart-plus"></i> <!--[cite: 12] -->
+                        <span>Add to Cart</span> <!--[cite: 12, 13] -->
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product 3: Choco-Chip Cookies[cite: 12] -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 relative flex flex-col justify-between group">
+                <span class="absolute top-4 left-4 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full z-10"> <!--[cite: 13] -->
+                    New <!--[cite: 12, 13] -->
+                </span>
+                <button class="wishlist-trigger absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition z-10" aria-label="Add to Wishlist">
+                    <i class="fa-regular fa-heart text-xs"></i>
+                </button>
+
+                <div class="h-52 w-full flex items-center justify-center overflow-hidden rounded-2xl mb-4 bg-slate-50"> <!--[cite: 13] -->
+                    <img 
+                        src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=600&q=80" 
+                        alt="Choco-Chip Cookies" 
+                        class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    > <!--[cite: 12] -->
+                </div>
+
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Bakery</span> <!--[cite: 12, 13] -->
+                    <h3 class="font-bold text-base text-slateDark mb-1">Choco-Chip Cookies</h3> <!--[cite: 12, 13] -->
+                    <div class="text-amber-400 text-xs mb-3">⭐⭐⭐⭐⭐ <span class="text-slate-400 font-medium">(92)</span></div> <!--[cite: 12, 13] -->
+                    
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span class="text-xl font-extrabold text-brand-600">$6.25</span> <!--[cite: 12, 13] -->
+                    </div>
+
+                    <button class="add-cart-trigger w-full py-3 rounded-2xl bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-800 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"> <!--[cite: 12, 13] -->
+                        <i class="fa-solid fa-cart-plus"></i> <!--[cite: 12] -->
+                        <span>Add to Cart</span> <!--[cite: 12, 13] -->
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer & Newsletter Section[cite: 12, 13] -->
+    <footer class="bg-white border-t border-slate-200 pt-16 pb-8"> <!--[cite: 13] -->
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <!-- Newsletter Card[cite: 12, 13] -->
+            <div class="bg-brand-600 rounded-3xl p-8 sm:p-12 text-white flex flex-col lg:flex-row items-center justify-between gap-8 mb-16 shadow-xl shadow-brand-600/20"> <!--[cite: 13] -->
+                <div class="max-w-lg text-center lg:text-left"> <!--[cite: 13] -->
+                    <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Join our newsletter for $10 off</h3> <!--[cite: 12, 13] -->
+                    <p class="text-emerald-100 text-xs sm:text-sm">We’ll send you a voucher for your next order over $50. <!--[cite: 12] --> No spam, unsubscribe anytime.</p>
+                </div>
+
+                <form onsubmit="event.preventDefault(); alert('Voucher sent! Check your inbox.'); this.reset();" class="w-full max-w-md bg-white p-2 rounded-2xl flex flex-col sm:flex-row gap-2"> <!--[cite: 12, 13] -->
+                    <input 
+                        type="email" 
+                        required 
+                        placeholder="Enter your email address" 
+                        class="flex-1 px-4 py-3 text-xs text-slate-800 placeholder-slate-400 outline-none rounded-xl"
+                    > <!--[cite: 12, 13] -->
+                    <button type="submit" class="px-6 py-3 bg-slateDark hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow"> <!--[cite: 12, 13] -->
+                        Subscribe <!--[cite: 12] -->
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer Columns[cite: 12, 13] -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 pb-16 border-b border-slate-100">
+                
+                <!-- Col 1: Brand Info[cite: 12, 13] -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="text-2xl font-black text-slateDark flex items-center gap-1.5"> <!--[cite: 12, 13] -->
+                        <span class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center text-sm shadow">
+                            <i class="fa-solid fa-leaf"></i>
+                        </span>
+                        <span>Fresh<span class="text-brand-600">Cart</span></span> <!--[cite: 12, 13] -->
+                    </div>
+                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed max-w-sm"> <!--[cite: 13] -->
+                        Your one-stop shop for fresh, organic groceries delivered straight to your doorstep. <!--[cite: 12, 13] --> Temperature-controlled fulfillment within 30 minutes.
+                    </p>
+                    <div class="flex gap-3 pt-2"> <!--[cite: 13] -->
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-600 flex items-center justify-center transition" aria-label="Facebook"><i class="fa-brands fa-facebook-f text-xs"></i></a> <!--[cite: 12, 13] -->
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-600 flex items-center justify-center transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-xs"></i></a> <!--[cite: 12, 13] -->
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-600 flex items-center justify-center transition" aria-label="Twitter"><i class="fa-brands fa-twitter text-xs"></i></a> <!--[cite: 12, 13] -->
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-600 flex items-center justify-center transition" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp text-xs"></i></a> <!--[cite: 12, 13] -->
+                    </div>
+                </div>
+
+                <!-- Col 2: Categories[cite: 12, 13] -->
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-slateDark mb-4">Shop Categories</h4> <!--[cite: 12, 13] -->
+                    <ul class="space-y-2.5 text-xs text-slate-500"> <!--[cite: 13] -->
+                        <li><a href="#categories" class="hover:text-brand-600 transition">Fresh Vegetables</a></li> <!--[cite: 12, 13] -->
+                        <li><a href="#categories" class="hover:text-brand-600 transition">Dairy &amp; Eggs</a></li> <!--[cite: 12, 13] -->
+                        <li><a href="#categories" class="hover:text-brand-600 transition">Beverages &amp; Juices</a></li> <!--[cite: 12] -->
+                        <li><a href="#categories" class="hover:text-brand-600 transition">Snacks &amp; Crackers</a></li> <!--[cite: 12, 13] -->
+                    </ul>
+                </div>
+
+                <!-- Col 3: Support[cite: 12, 13] -->
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-slateDark mb-4">Support</h4> <!--[cite: 12, 13] -->
+                    <ul class="space-y-2.5 text-xs text-slate-500"> <!--[cite: 13] -->
+                        <li><a href="#" class="hover:text-brand-600 transition">Track Order</a></li> <!--[cite: 12, 13] -->
+                        <li><a href="#" class="hover:text-brand-600 transition">Shipping Policy</a></li> <!--[cite: 12, 13] -->
+                        <li><a href="#" class="hover:text-brand-600 transition">Refund &amp; Return</a></li> <!--[cite: 12, 13] -->
+                        <li><a href="#" class="hover:text-brand-600 transition">FAQs</a></li> <!--[cite: 12, 13] -->
+                    </ul>
+                </div>
+
+                <!-- Col 4: Contact Us[cite: 12, 13] -->
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-slateDark mb-4">Contact Us</h4> <!--[cite: 12, 13] -->
+                    <div class="space-y-3 text-xs text-slate-500"> <!--[cite: 13] -->
+                        <p class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-location-dot text-brand-600"></i> <!--[cite: 12, 13] -->
+                            <span>123 Grocery Lane, New York, NY</span> <!--[cite: 12] -->
+                        </p>
+                        <p class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-phone text-brand-600"></i> <!--[cite: 12, 13] -->
+                            <span>+1 (555) 123-4567</span> <!--[cite: 12] -->
+                        </p>
+                        <p class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-envelope text-brand-600"></i> <!--[cite: 12, 13] -->
+                            <span>support@freshcart.com</span> <!--[cite: 12] -->
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Bar & Required Copyright[cite: 12, 13] -->
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500"> <!--[cite: 13] -->
+                <p class="font-medium">
+                    © 2026 WebNova Studio · RR Web Designers · All rights reserved.
+                </p>
+                <div class="flex items-center gap-4 text-xl text-slate-400"> <!--[cite: 13] -->
+                    <i class="fa-brands fa-cc-visa hover:text-slate-700 transition"></i> <!--[cite: 12, 13] -->
+                    <i class="fa-brands fa-cc-mastercard hover:text-slate-700 transition"></i> <!--[cite: 12, 13] -->
+                    <i class="fa-brands fa-cc-paypal hover:text-slate-700 transition"></i> <!--[cite: 12, 13] -->
+                    <i class="fa-brands fa-cc-apple-pay hover:text-slate-700 transition"></i> <!--[cite: 12, 13] -->
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Mobile Fixed Bottom Action Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-6 flex justify-between items-center text-slate-600">
+        <a href="#home" class="flex flex-col items-center gap-1 text-[10px] font-semibold hover:text-brand-600">
+            <i class="fa-solid fa-house text-sm"></i>
+            <span>Home</span>
+        </a>
+        <a href="#categories" class="flex flex-col items-center gap-1 text-[10px] font-semibold hover:text-brand-600">
+            <i class="fa-solid fa-border-all text-sm"></i>
+            <span>Categories</span>
+        </a>
+        <a href="#deals" class="flex flex-col items-center gap-1 text-[10px] font-semibold text-brand-600">
+            <i class="fa-solid fa-bolt text-sm"></i>
+            <span>Deals</span>
+        </a>
+        <a href="#shop" class="flex flex-col items-center gap-1 text-[10px] font-semibold hover:text-brand-600">
+            <i class="fa-solid fa-bag-shopping text-sm"></i>
+            <span>Shop</span>
+        </a>
+    </div>
+
+    <!-- Interactive JavaScript -->
+    <script>
+        // Mobile Drawer Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        const menuToggleIcon = document.getElementById('menuToggleIcon');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileDrawer.classList.toggle('hidden');
+            if (mobileDrawer.classList.contains('hidden')) {
+                menuToggleIcon.classList.remove('fa-xmark');
+                menuToggleIcon.classList.add('fa-bars');
+            } else {
+                menuToggleIcon.classList.remove('fa-bars');
+                menuToggleIcon.classList.add('fa-xmark');
+            }
+        });
+
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileDrawer.classList.add('hidden');
+                menuToggleIcon.classList.remove('fa-xmark');
+                menuToggleIcon.classList.add('fa-bars');
+            });
+        });
+
+        // Toast Trigger Helper
+        const toast = document.getElementById('actionToast');
+        const toastTitle = document.getElementById('toastTitle');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+
+        function triggerToast(title, message, isHeart = false) {
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            
+            if (isHeart) {
+                toastIcon.className = "w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center font-bold";
+                toastIcon.innerHTML = '<i class="fa-solid fa-heart"></i>';
+            } else {
+                toastIcon.className = "w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold";
+                toastIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            }
+
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('-translate-y-24', 'opacity-0');
+            }, 2500);
+        }
+
+        // Cart Add Functionality
+        let cartItems = 0;
+        const cartCountEl = document.getElementById('cartCount');
+        document.querySelectorAll('.add-cart-trigger').forEach(btn => {
+            btn.addEventListener('click', () => {
+                cartItems++;
+                cartCountEl.textContent = cartItems;
+                cartCountEl.classList.add('scale-125');
+                setTimeout(() => cartCountEl.classList.remove('scale-125'), 200);
+                triggerToast('Cart Updated', 'Fresh grocery item added to your cart.');
+            });
+        });
+
+        // Wishlist Functionality
+        let wishlistItems = 0;
+        const wishlistCountEl = document.getElementById('wishlistCount');
+        document.querySelectorAll('.wishlist-trigger').forEach(btn => {
+            btn.addEventListener('click', () => {
+                wishlistItems++;
+                wishlistCountEl.textContent = wishlistItems;
+                wishlistCountEl.classList.add('scale-125');
+                setTimeout(() => wishlistCountEl.classList.remove('scale-125'), 200);
+                triggerToast('Saved to Wishlist', 'Item saved for your next weekly run.', true);
+            });
+        });
+
+        // Live Flash Deal Timer Simulation (HH:MM:SS)
+        let totalSeconds = 5 * 3600 + 20 * 60 + 15;
+        const timerElement = document.getElementById('countdownTimer');
+
+        setInterval(() => {
+            if (totalSeconds > 0) {
+                totalSeconds--;
+                const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                const seconds = String(totalSeconds % 60).padStart(2, '0');
+                timerElement.textContent = `Ends in: ${hours}h ${minutes}m ${seconds}s`;
+            }
+        }, 1000);
+
+        // Scroll Intersection Observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll('.reveal-element').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
